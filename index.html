@@ -1,0 +1,1126 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="data:,">
+<title>EA 10: Seeds Daten in 3D</title>
+
+<style>
+  :root {
+    --bg: #ffffff;
+    --surface: #ffffff;
+    --soft: #f5f5f5;
+    --primary: #1a1a1a;
+    --primary-dark: #000000;
+    --primary-light: #ededed;
+    --accent: #2a2a2a;
+    --success: #2e7d32;
+    --success-bg: #e8f5e9;
+    --error: #c62828;
+    --error-bg: #ffebee;
+    --warn: #ef6c00;
+    --warn-bg: #fff3e0;
+    --text: #1a1a1a;
+    --text-muted: #6b6b6b;
+    --border: #d4d4d4;
+    --border-strong: #1a1a1a;
+    --shadow: 0 1px 2px rgba(0,0,0,.05);
+    --shadow-lg: 0 2px 6px rgba(0,0,0,.06);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.55;
+  }
+
+  header {
+    background: #1a1a1a;
+    color: #fff;
+    padding: 2.5rem 1.5rem 2rem;
+    border-bottom: 1px solid #000;
+  }
+  header .wrap { max-width: 1080px; margin: 0 auto; }
+  header h1 { margin: 0 0 .35rem; font-size: 1.85rem; font-weight: 600; }
+  header p { margin: 0; opacity: .92; font-size: 1rem; }
+  header .meta {
+    margin-top: 1rem; font-size: .85rem; opacity: .75;
+    display: flex; flex-wrap: wrap; gap: .25rem 1rem;
+  }
+
+  main { max-width: 1080px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+  section { margin-bottom: 3rem; }
+
+  h2 {
+    font-size: 1.35rem; margin: 0 0 1rem;
+    padding-bottom: .5rem; border-bottom: 1px solid var(--border);
+  }
+  h2 .num {
+    display: inline-block; background: #1a1a1a; color: #fff;
+    border-radius: 2px; padding: .15rem .55rem; margin-right: .55rem;
+    font-size: .85rem; vertical-align: middle; letter-spacing: .03em;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 4px solid #1a1a1a;
+    border-radius: 4px;
+    box-shadow: var(--shadow);
+    padding: 1rem 1.1rem 1.1rem;
+    margin-bottom: 1.25rem;
+  }
+  .card h4 { margin: 0 0 .35rem; font-size: .95rem; font-weight: 600; }
+  .card .sub { font-size: .82rem; color: var(--text-muted); margin: 0 0 .65rem; }
+
+  .toolbar { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1rem; }
+  .btn {
+    display: inline-block; padding: .5rem 1rem;
+    background: #1a1a1a; color: #fff;
+    border: 1px solid #1a1a1a; border-radius: 2px;
+    font-size: .9rem; font-weight: 500; cursor: pointer;
+    transition: background .15s, color .15s;
+    font-family: inherit;
+  }
+  .btn:hover, .btn.is-pressed { background: #fff; color: #1a1a1a; }
+  .btn:focus-visible { outline: 2px solid #1a1a1a; outline-offset: 2px; }
+  .btn:disabled { background: #fff; color: var(--text-muted); border-color: var(--border); cursor: not-allowed; }
+  .btn.secondary { background: #fff; color: #1a1a1a; }
+  .btn.secondary:hover, .btn.secondary.is-pressed { background: #1a1a1a; color: #fff; }
+  .btn kbd { margin-left: .35rem; }
+
+  .global-status {
+    background: var(--soft); color: var(--text);
+    border-left: 3px solid #1a1a1a;
+    padding: .65rem 1rem; border-radius: 0;
+    font-size: .9rem; margin-bottom: 1.25rem;
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+  }
+  .global-status.is-ready { background: var(--success-bg); border-left-color: var(--success); }
+  .global-status.is-error { background: var(--error-bg); border-left-color: var(--error); color: var(--error); }
+  .global-status.is-warn  { background: var(--warn-bg);  border-left-color: var(--warn); }
+
+  .statline {
+    display: flex; flex-wrap: wrap; gap: .4rem 1.5rem; margin: 0 0 1rem;
+    font-size: .9rem; font-family: ui-monospace, Menlo, Consolas, monospace;
+  }
+  .statline b { font-weight: 600; }
+
+  .prose { max-width: 740px; }
+  .prose p { margin: 0 0 .75rem; }
+  .prose ul { padding-left: 1.4rem; margin: 0 0 1rem; }
+  .prose li { margin-bottom: .35rem; }
+  .prose a { color: #1a1a1a; text-decoration-thickness: 1px; }
+  .prose a:hover { text-decoration-thickness: 2px; }
+  .prose code { background: var(--soft); padding: 0 .3rem; border-radius: 3px; font-size: .9em; }
+
+  table.key-table { border-collapse: collapse; margin: .5rem 0 1rem; font-size: .9rem; width: 100%; }
+  table.key-table th, table.key-table td { border: 1px solid var(--border); padding: .4rem .7rem; text-align: left; }
+  table.key-table th { background: var(--soft); font-weight: 600; }
+  table.key-table td:first-child { white-space: nowrap; width: 1%; }
+
+  kbd {
+    display: inline-block; padding: .05rem .35rem; background: var(--soft);
+    border: 1px solid var(--border); border-radius: 3px; font-size: .78rem; color: var(--text);
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+  }
+
+  footer { border-top: 1px solid var(--border); padding-top: 1.5rem; font-size: .85rem; color: var(--text-muted); }
+
+  @media (max-width: 720px) {
+    header h1 { font-size: 1.5rem; }
+    main { padding: 1.5rem 1rem 3rem; }
+  }
+
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+  /* Kontextsensitive Hilfe (ISO 9241-110) */
+  .help { position: relative; display: inline-block; margin-left: .5rem; vertical-align: middle; }
+  .help-btn {
+    width: 1.4rem; height: 1.4rem; padding: 0;
+    border: 1px solid var(--border-strong); background: #fff; color: var(--text);
+    border-radius: 50%; font-size: .8rem; font-weight: 600; cursor: help; line-height: 1;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .help-btn:hover, .help-btn:focus-visible { background: var(--text); color: #fff; outline: none; }
+  .help-popover {
+    display: none; position: absolute; top: calc(100% + .35rem); left: 50%; transform: translateX(-50%);
+    width: min(360px, 80vw); background: #fff; color: var(--text);
+    border: 1px solid var(--border-strong); border-radius: 4px;
+    padding: .7rem .85rem; font-size: .85rem; line-height: 1.45;
+    box-shadow: var(--shadow-lg); z-index: 10; text-align: left; font-weight: normal;
+  }
+  .help-popover::before {
+    content: ""; position: absolute; top: -7px; left: 50%; transform: translateX(-50%) rotate(45deg);
+    width: 12px; height: 12px; background: #fff;
+    border-left: 1px solid var(--border-strong); border-top: 1px solid var(--border-strong);
+  }
+  .help.is-open .help-popover { display: block; }
+  .help-popover h4 { margin: 0 0 .35rem; font-size: .9rem; font-weight: 600; }
+  .help-popover p { margin: 0 0 .35rem; }
+  .help-popover p:last-child { margin-bottom: 0; }
+
+  /* Zusätzlich für EA 10: WebGL-Bühne, Step-Anzeige, Legende, Datentabellen */
+  .gl-stage {
+    position: relative; width: 100%; aspect-ratio: 16 / 10;
+    background: var(--soft); border: 1px solid var(--border); border-radius: 4px;
+    overflow: hidden; margin-bottom: 1rem;
+  }
+  .gl-stage canvas {
+    position: absolute; inset: 0; width: 100%; height: 100%; display: block;
+    cursor: grab; touch-action: none; outline: none;
+  }
+  .gl-stage canvas.is-dragging { cursor: grabbing; }
+  .gl-stage canvas:focus-visible { box-shadow: inset 0 0 0 2px #1a1a1a; }
+  .step-badge {
+    position: absolute; top: .75rem; left: .75rem; pointer-events: none;
+    background: rgba(255,255,255,.88); border: 1px solid var(--border); border-left: 4px solid #1a1a1a;
+    border-radius: 3px; padding: .35rem .7rem .4rem;
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+  }
+  .step-badge .label { display: block; font-size: .7rem; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted); }
+  .step-badge .value { display: block; font-size: 1.9rem; font-weight: 600; line-height: 1.1; }
+  .step-badge .mode { display: block; font-size: .72rem; color: var(--text-muted); }
+  .stage-msg {
+    position: absolute; inset: 0; display: none; align-items: center; justify-content: center;
+    padding: 1.5rem; text-align: center; color: var(--error); font-size: .95rem; background: var(--soft);
+  }
+  .gl-stage.is-failed .stage-msg { display: flex; }
+  .legend { display: flex; flex-wrap: wrap; gap: .4rem 1.4rem; margin: 0 0 .9rem; font-size: .9rem; }
+  .legend span { display: inline-flex; align-items: center; gap: .45rem; }
+  .legend i { width: .9rem; height: .9rem; border-radius: 50%; display: inline-block; border: 1px solid rgba(0,0,0,.25); }
+  .toolbar .sep { width: 1px; background: var(--border); margin: 0 .25rem; }
+  table.data-table { border-collapse: collapse; margin: .5rem 0 1rem; font-size: .9rem; width: 100%; }
+  table.data-table th, table.data-table td { border: 1px solid var(--border); padding: .4rem .7rem; text-align: left; vertical-align: top; }
+  table.data-table th { background: var(--soft); font-weight: 600; }
+  table.data-table td.num { font-family: ui-monospace, Menlo, Consolas, monospace; white-space: nowrap; }
+  .formula {
+    font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .88rem;
+    background: var(--soft); border-left: 3px solid #1a1a1a; padding: .5rem .8rem; margin: 0 0 .75rem;
+    overflow-wrap: anywhere;
+  }
+  @media (max-width: 600px) {
+    .gl-stage { aspect-ratio: 1 / 1; }
+    .step-badge .value { font-size: 1.5rem; }
+    table.data-table, table.key-table { font-size: .82rem; }
+    table.data-table th, table.data-table td, table.key-table th, table.key-table td { padding: .35rem .45rem; }
+    table.data-table td, table.data-table th { overflow-wrap: anywhere; hyphens: auto; }
+    table.data-table td.num { white-space: normal; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <h1>EA 10: Seeds Daten in 3D</h1>
+    <p>Der Seeds-Datensatz (210 Weizenkörner, 7 Merkmale, 3 Sorten) wird mit t-SNE auf drei Dimensionen reduziert und als interaktive 3D-Punktwolke in WebGL dargestellt. Beim Start wird das gespeicherte beste Ergebnis geladen, mit Restart und Step lässt sich t-SNE neu rechnen.</p>
+    <div class="meta">
+      <span>Hamid Mergan</span>
+      <span>TH Lübeck</span>
+      <span>Modul Graphical Visualisation Technologies</span>
+      <span>Wintersemester 2026/27</span>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <div id="globalStatus" class="global-status" role="status" aria-live="polite">Lade Daten …</div>
+
+  <!-- A1 Grafik -->
+  <section aria-labelledby="a1">
+    <h2 id="a1"><span class="num">A1</span>t-SNE-Karte der Seeds-Daten
+      <span class="help">
+        <button type="button" class="help-btn" aria-label="Hilfe zu A1" aria-expanded="false">?</button>
+        <span class="help-popover" role="tooltip">
+          <h4>Restart, Step und Step10</h4>
+          <p>Nach dem Laden ist das gespeicherte beste Ergebnis zu sehen. <kbd>r</kbd> startet t-SNE neu bei Step 0 mit neuen Zufallszahlen. <kbd>t</kbd> rechnet genau einen Iterationsschritt, <kbd>T</kbd> (Shift+t) zehn Schritte.</p>
+          <p>Die Wolke lässt sich mit der Maus drehen (ziehen) und zoomen (Mausrad) oder mit den Tasten aus der Tabelle in A2 steuern.</p>
+        </span>
+      </span>
+    </h2>
+
+    <div class="card">
+      <h4>Seeds in 3D</h4>
+      <p class="sub">Jede Kugel ist ein Weizenkorn. Die Position stammt aus der t-SNE-Karte, die Farbe zeigt die Sorte.</p>
+      <div class="gl-stage" id="stage">
+        <canvas id="glCanvas" tabindex="0" aria-label="3D-Darstellung der t-SNE-Karte, mit der Maus drehbar"></canvas>
+        <div class="step-badge" aria-hidden="true">
+          <span class="label">Step-Count</span>
+          <span class="value" id="stepBadge">…</span>
+          <span class="mode" id="modeBadge">lädt</span>
+        </div>
+        <div class="stage-msg" id="stageMsg"></div>
+      </div>
+      <div class="legend" aria-label="Legende der Klassen">
+        <span><i style="background:#0072b2"></i>Kama (70)</span>
+        <span><i style="background:#d55e00"></i>Rosa (70)</span>
+        <span><i style="background:#009e73"></i>Canadian (70)</span>
+      </div>
+      <div class="statline" aria-label="Zustand von t-SNE">
+        <span><b>Step-Count:</b> <span id="infoStep">…</span></span>
+        <span><b>Perplexity:</b> <span id="infoPerp">…</span></span>
+        <span><b>Epsilon:</b> <span id="infoEps">…</span></span>
+        <span><b>Dim:</b> <span id="infoDim">…</span></span>
+        <span><b>kNN (k=5):</b> <span id="infoKnn">…</span></span>
+        <span><b>Silhouette:</b> <span id="infoSil">…</span></span>
+        <span><b>Projektion:</b> <span id="infoProj">…</span></span>
+      </div>
+      <div class="toolbar">
+        <button id="btnRestart" class="btn" type="button" disabled>Restart<kbd>r</kbd></button>
+        <button id="btnStep" class="btn" type="button" disabled>Step<kbd>t</kbd></button>
+        <button id="btnStep10" class="btn" type="button" disabled>Step10<kbd>T</kbd></button>
+        <button id="btnSave" class="btn secondary" type="button" disabled>Karte speichern<kbd>k</kbd></button>
+      </div>
+      <div class="toolbar">
+        <button id="btnZoomIn" class="btn secondary" type="button" disabled>Zoom +<kbd>b</kbd></button>
+        <button id="btnZoomOut" class="btn secondary" type="button" disabled>Zoom −<kbd>B</kbd></button>
+        <button id="btnOrtho" class="btn secondary" type="button" disabled>Ortho<kbd>o</kbd></button>
+        <button id="btnPersp" class="btn secondary" type="button" disabled>Perspektive<kbd>p</kbd></button>
+        <button id="btnReset" class="btn secondary" type="button" disabled>Ansicht zurücksetzen<kbd>0</kbd></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- A2 Bedienung -->
+  <section aria-labelledby="a2">
+    <h2 id="a2"><span class="num">A2</span>Bedienung
+      <span class="help">
+        <button type="button" class="help-btn" aria-label="Hilfe zu A2" aria-expanded="false">?</button>
+        <span class="help-popover" role="tooltip">
+          <h4>Navigation wie im Kapitel NAV</h4>
+          <p>Die Kamera wird über die View-Matrix gesteuert: Drehungen und Verschiebungen werden in Kamerakoordinaten von links an die View-Matrix multipliziert. Shift kehrt bei den Navigationstasten die Richtung um.</p>
+          <p>Bei <kbd>t</kbd> und <kbd>T</kbd> wird zwischen Klein- und Großschreibung unterschieden.</p>
+        </span>
+      </span>
+    </h2>
+    <table class="key-table">
+      <thead><tr><th>Taste</th><th>Wirkung</th></tr></thead>
+      <tbody>
+        <tr><td><kbd>r</kbd></td><td>Restart: t-SNE beginnt von vorne (Step 0) auf den Ausgangsdaten, mit neuen Zufallszahlen</td></tr>
+        <tr><td><kbd>t</kbd></td><td>Step: genau ein Iterationsschritt</td></tr>
+        <tr><td><kbd>T</kbd> (Shift+t)</td><td>Step10: zehn Iterationsschritte auf einmal</td></tr>
+        <tr><td><kbd>x</kbd> / <kbd>X</kbd></td><td>Kamera um ihre X-Achse drehen (Nick), je 5°, Shift dreht zurück</td></tr>
+        <tr><td><kbd>y</kbd> / <kbd>Y</kbd></td><td>Kamera um ihre Y-Achse drehen (Gier)</td></tr>
+        <tr><td><kbd>z</kbd> / <kbd>Z</kbd></td><td>Kamera um ihre Z-Achse drehen (Roll)</td></tr>
+        <tr><td><kbd>w</kbd> <kbd>a</kbd> <kbd>s</kbd> <kbd>d</kbd></td><td>Kamera nach oben, links, unten, rechts verschieben (je 5 % des Bildausschnitts)</td></tr>
+        <tr><td><kbd>Leertaste</kbd></td><td>Kameraflug vorwärts, mit Shift rückwärts</td></tr>
+        <tr><td><kbd>b</kbd> / <kbd>B</kbd></td><td>Zoom hinein bzw. heraus (Bildausschnitt um 10 % kleiner bzw. größer, die Kugeln behalten ihre Bildgröße)</td></tr>
+        <tr><td><kbd>o</kbd> / <kbd>p</kbd></td><td>Orthogonale bzw. perspektivische Projektion</td></tr>
+        <tr><td><kbd>0</kbd></td><td>Ansicht zurücksetzen (Kamera und Zoom)</td></tr>
+        <tr><td><kbd>k</kbd></td><td>Aktuelle Karte als Datei <code>seeds-tsne.json</code> herunterladen</td></tr>
+        <tr><td>Maus ziehen</td><td>Nick und Gier der Kamera (auch per Touch)</td></tr>
+        <tr><td>Mausrad</td><td>Zoom wie <kbd>b</kbd> / <kbd>B</kbd></td></tr>
+      </tbody>
+    </table>
+    <div class="prose">
+      <p>Restart, Step und Step10 reagieren genau einmal pro Tastendruck. Gedrückthalten löst keine weiteren Schritte aus. Die Navigationstasten dürfen gedrückt gehalten werden. Tastenkombinationen mit Strg, Cmd oder Alt (z. B. Cmd+R zum Neuladen) werden nicht abgefangen.</p>
+    </div>
+  </section>
+
+  <!-- A3 t-SNE Einstellungen -->
+  <section aria-labelledby="a3">
+    <h2 id="a3"><span class="num">A3</span>t-SNE-Einstellungen und Ergebnis
+      <span class="help">
+        <button type="button" class="help-btn" aria-label="Hilfe zu A3" aria-expanded="false">?</button>
+        <span class="help-popover" role="tooltip">
+          <h4>Woher die Werte stammen</h4>
+          <p>Die Tabellen werden beim Laden aus <code>data/seeds-tsne.json</code> gefüllt. Diese Datei enthält die Koordinaten des besten Laufs zusammen mit seinen Parametern und Gütemaßen.</p>
+        </span>
+      </span>
+    </h2>
+
+    <div class="card">
+      <h4>Einstellungen des gespeicherten Ergebnisses</h4>
+      <p class="sub">Bibliothek tSNEJS, Aufruf wie im Kapitel DIM: <code>new tsnejs.tSNE(opt)</code>, <code>initDataRaw(data)</code>, danach <code>step()</code>.</p>
+      <table class="data-table">
+        <thead><tr><th>Parameter</th><th>Wert</th><th>Bemerkung</th></tr></thead>
+        <tbody>
+          <tr><td>Dimension <code>dim</code></td><td class="num" id="tabDim">3</td><td>dreidimensionale Karte, wie in der Aufgabe verlangt</td></tr>
+          <tr><td>Perplexity</td><td class="num" id="tabPerp">20</td><td>effektive Anzahl betrachteter Nachbarn je Punkt</td></tr>
+          <tr><td>Epsilon (Lernrate)</td><td class="num" id="tabEps">10</td><td>Schrittweite des Gradientenabstiegs, Vorgabewert von tSNEJS</td></tr>
+          <tr><td>Iterationen</td><td class="num" id="tabIter">1000</td><td>Anzahl der Aufrufe von <code>step()</code> bis zum gespeicherten Zustand</td></tr>
+          <tr><td>Normalisierung</td><td class="num" id="tabNorm">Min-Max</td><td>jedes der 7 Merkmale linear auf [0, 1] skaliert, danach euklidische Abstände</td></tr>
+          <tr><td>Initialisierung</td><td class="num">N(0, 10<sup>-4</sup>)</td><td>zufällige Startpunkte aus tSNEJS (<code>Math.random</code>, kein fester Seed möglich)</td></tr>
+          <tr><td>Feste Interna</td><td class="num">×4, 0,5 / 0,8</td><td>in tSNEJS fest: Verstärkung von P bis Schritt 100, Momentum 0,5 bis Schritt 250, danach 0,8</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h4>Güte der Klassentrennung</h4>
+      <p class="sub">Gemessen an den Klassen-Labels, die t-SNE selbst nicht kennt. Zum Vergleich der normalisierte 7D-Originalraum.</p>
+      <table class="data-table">
+        <thead><tr><th>Gütemaß</th><th>3D-Karte</th><th>7D-Original</th></tr></thead>
+        <tbody>
+          <tr><td>kNN-Genauigkeit, k = 5 (Leave-one-out, Mehrheitsentscheid der 5 nächsten Nachbarn)</td><td class="num" id="tabKnn5">94,3 %</td><td class="num" id="tabKnn5o">92,9 %</td></tr>
+          <tr><td>kNN-Genauigkeit, k = 10</td><td class="num" id="tabKnn10">94,3 %</td><td class="num">nicht berechnet</td></tr>
+          <tr><td>Silhouetten-Koeffizient (Mittel über alle Punkte, Bereich −1 bis 1)</td><td class="num" id="tabSil">0,515</td><td class="num" id="tabSilo">0,382</td></tr>
+        </tbody>
+      </table>
+      <p class="sub">Die Karte erhält die Nachbarschaften also mindestens so gut wie der Originalraum und trennt die Klassen deutlich kompakter. Etwa 6 % der Körner liegen auch im 7D-Raum zwischen zwei Sorten, vor allem an der Grenze von Kama zu Rosa und Canadian. Eine vollständige Trennung lassen die Daten nicht zu.</p>
+    </div>
+
+    <div class="prose">
+      <p><b>Vorgehen bei der Optimierung.</b> Weil tSNEJS <code>Math.random</code> nutzt, hängt jedes Ergebnis vom Zufall ab. Deshalb habe ich außerhalb der Anwendung mit derselben Bibliothek in Node.js 2400 Läufe gerechnet und an festen Zwischenständen bewertet:</p>
+      <ul>
+        <li>Normalisierung: keine, Min-Max auf [0, 1] und z-Standardisierung</li>
+        <li>Perplexity: 5, 10, 15, 20, 25, 30, 40, 50, 70</li>
+        <li>Epsilon: 5, 10, 20, 50, 100</li>
+        <li>Iterationen: Auswertung bei 60 bis 2000 Schritten</li>
+        <li>je Kombination 12 bis 40 Läufe mit verschiedenen Zufallsstarts</li>
+      </ul>
+      <p>Bewertet wurde mit der kNN-Genauigkeit und dem Silhouetten-Koeffizienten (siehe Tabelle). Ausgewählt wurde der Lauf mit der größten Summe beider Maße unter den konvergierten Läufen (ab 500 Schritten).</p>
+      <p><b>Beobachtungen.</b> Ohne Normalisierung dominieren Fläche und Umfang die Abstände, die kNN-Genauigkeit fällt auf etwa 87 %. Min-Max und z-Standardisierung liefern fast gleiche Werte. Eine Perplexity von 15 bis 30 trennt am besten: Bei 5 zerfallen die Sorten in viele kleine Gruppen, ab 50 rücken die Wolken zusammen. Epsilon verändert vor allem die Geschwindigkeit, nach 750 bis 1000 Schritten ändert sich die Karte kaum noch. Kurz nach Schritt 100 sind die Wolken wegen der internen Verstärkung von P besonders kompakt (Silhouette um 0,65). Dieser Zwischenstand ist aber noch nicht konvergiert, deshalb habe ich ihn nicht genommen.</p>
+      <p><b>Speichern.</b> Die Datei <code>data/seeds-tsne.json</code> enthält die Koordinaten des besten Laufs nach 1000 Schritten, die Klassen-Labels, die Parameter und die Gütemaße. Die Koordinaten sind auf ihre Hauptachsen gedreht. Das ändert keine Abstände und damit weder Kosten noch Gütemaße. Mit <kbd>k</kbd> lässt sich jeder neue Lauf im gleichen Format herunterladen, wie im Kapitel DIM unter „Daten speichern“ beschrieben.</p>
+    </div>
+  </section>
+
+  <!-- A4 Umsetzung -->
+  <section aria-labelledby="a4">
+    <h2 id="a4"><span class="num">A4</span>Umsetzung
+      <span class="help">
+        <button type="button" class="help-btn" aria-label="Hilfe zu A4" aria-expanded="false">?</button>
+        <span class="help-popover" role="tooltip">
+          <h4>Aufbau nach DAT, NAV und DIM</h4>
+          <p>Daten laden und parsen wie in DAT, Kamera wie in NAV, t-SNE wie in DIM. Gerendert wird mit reinem WebGL 1 ohne Matrizenbibliothek.</p>
+        </span>
+      </span>
+    </h2>
+    <div class="prose">
+      <p><b>Daten (DAT).</b> <code>data/seeds.csv</code> wird per <code>XMLHttpRequest</code> vom Server geladen. Das Format entspricht der CSV-Version aus dem Kurs: keine Kopfzeile, Kommas als Trennzeichen, sieben Merkmale und als letztes Feld die Klasse 1, 2 oder 3. Ein kleiner eigener Parser zerlegt den Text in Zeilen und Felder und wandelt sie in Zahlen um. Danach trennt <code>splitDataAndLabels</code> die Labels ab, <code>preprocessLabels</code> macht daraus 0 bis 2, <code>calcStats</code> bestimmt Minimum, Maximum, Wertebereich und Mittelwert je Merkmal. Mit diesen Werten werden die Merkmale auf [0, 1] normalisiert.</p>
+      <p><b>t-SNE (DIM).</b> Restart erzeugt ein neues Objekt <code>new tsnejs.tSNE({dim: 3, perplexity: 20, epsilon: 10})</code> und ruft <code>initDataRaw</code> mit den normalisierten Ausgangsdaten auf. Dabei werden die Abstände und die Wahrscheinlichkeiten p<sub>ij</sub> neu berechnet und die Kartenpunkte mit neuen Zufallszahlen belegt. Step ruft <code>step()</code> einmal auf, Step10 zehnmal. Danach holt <code>getSolution()</code> die Karte, und <code>setModelTransformationFromData</code> setzt die neuen Kugelpositionen. Nach dem Laden wird das gespeicherte Ergebnis als Startlösung in tSNEJS gesetzt (Step-Count 1000). Step und Step10 rechnen dann von dort aus weiter.</p>
+      <div class="formula">p<sub>j|i</sub> = exp(−‖x<sub>i</sub> − x<sub>j</sub>‖² / 2σ<sub>i</sub>²) / Σ<sub>k≠i</sub> exp(−‖x<sub>i</sub> − x<sub>k</sub>‖² / 2σ<sub>i</sub>²), &nbsp; p<sub>ij</sub> = (p<sub>j|i</sub> + p<sub>i|j</sub>) / 2n</div>
+      <div class="formula">q<sub>ij</sub> = (1 + ‖y<sub>i</sub> − y<sub>j</sub>‖²)<sup>−1</sup> / Σ<sub>k≠l</sub> (1 + ‖y<sub>k</sub> − y<sub>l</sub>‖²)<sup>−1</sup>, &nbsp; C = KL(P‖Q) = Σ<sub>i</sub> Σ<sub>j</sub> p<sub>ij</sub> log(p<sub>ij</sub> / q<sub>ij</sub>)</div>
+      <p>Die Perplexity legt über eine binäre Suche die Varianzen σ<sub>i</sub> fest. Jeder Schritt verschiebt die Kartenpunkte y<sub>i</sub> entgegen dem Gradienten ∂C/∂y<sub>i</sub> = 4 Σ<sub>j</sub> (p<sub>ij</sub> − q<sub>ij</sub>)(y<sub>i</sub> − y<sub>j</sub>)(1 + ‖y<sub>i</sub> − y<sub>j</sub>‖²)<sup>−1</sup>, skaliert mit Epsilon.</p>
+      <p><b>Darstellung.</b> Jeder Datenpunkt ist eine Kugel aus einem gemeinsamen Vertex- und Index-Buffer (Breiten- und Längenkreise). Pro Kugel werden die Model-View-Matrix, die Normalenmatrix und die Farbe als Uniforms gesetzt. Beleuchtet wird wie in DAT mit einem Kameralicht aus ambientem und diffusem Anteil, dazu ein schwacher Glanzpunkt. Weiter entfernte Kugeln werden leicht zur Hintergrundfarbe hin aufgehellt, das verstärkt zusammen mit der perspektivischen Größenabnahme den Tiefeneindruck. Die Karte wird für die Anzeige zentriert und so skaliert, dass 98 % der Punkte in einer Kugel mit Radius 1 liegen. So ist auch der Zustand bei Step 0, in dem alle Punkte sehr nah am Ursprung liegen, gut sichtbar. Nach jedem Restart und Step gleiten die Kugeln in 0,3 s von der alten zur neuen Position.</p>
+      <p><b>Navigation (NAV).</b> Die Kamera besitzt eine eigene View-Matrix <code>camera.vMatrix</code>. <code>camera.rotateX</code>, <code>rotateY</code>, <code>rotateZ</code> und <code>translate</code> entstehen wie in der Übung „Function-Factory“ und multiplizieren eine Dreh- oder Verschiebematrix von links an die View-Matrix, also in Kamerakoordinaten (Nick, Gier, Roll). Der Zoom ändert <code>camera.lrtb</code> um 10 % und skaliert die Kugeln mit (<code>rescaleModels</code>). In der Perspektive steht das Auge 3,6 Einheiten hinter dem Drehpunkt der Kamera, der Öffnungswinkel folgt aus <code>lrtb</code>. Die Leertaste bewegt die Kamera entlang der Blickrichtung wie in der Übung „Kameraflug“. Achsen oder ein Rahmen werden wie im Kapitel NAV nicht gezeichnet.</p>
+    </div>
+  </section>
+
+  <!-- A5 Material -->
+  <section aria-labelledby="a5">
+    <h2 id="a5"><span class="num">A5</span>Material &amp; Quellen</h2>
+    <div class="prose">
+      <ul>
+        <li><b>Datensatz:</b> Seeds, UCI Machine Learning Repository, <a href="https://archive.ics.uci.edu/dataset/236/seeds">archive.ics.uci.edu/dataset/236/seeds</a>, DOI <a href="https://doi.org/10.24432/C5H30K">10.24432/C5H30K</a>, Lizenz CC BY 4.0. Die Originaldatei <code>seeds_dataset.txt</code> (Tabulatoren, an einigen Stellen doppelt) wurde unverändert in Werten nach <code>data/seeds.csv</code> mit Kommas als Trennzeichen übertragen.</li>
+        <li><b>Veröffentlichung zum Datensatz:</b> M. Charytanowicz, J. Niewczas, P. Kulczycki, P. A. Kowalski, S. Łukasik, S. Żak: Complete Gradient Clustering Algorithm for Features Analysis of X-ray Images. In: E. Piętka, J. Kawa (Hrsg.): Information Technologies in Biomedicine, Springer, Berlin Heidelberg 2010, S. 15 bis 24, DOI <a href="https://doi.org/10.1007/978-3-642-13105-9_2">10.1007/978-3-642-13105-9_2</a>.</li>
+        <li><b>t-SNE-Bibliothek:</b> tSNEJS von Andrej Karpathy, <a href="https://github.com/karpathy/tsnejs">github.com/karpathy/tsnejs</a>, MIT-Lizenz. Unveränderte Kopie der Datei <code>tsne.js</code> (Commit 13ece5d vom 24.10.2016) unter <code>lib/tsne.js</code>, mit Quellen- und Lizenzhinweis im Dateikopf.</li>
+        <li><b>Verfahren:</b> L. van der Maaten, G. Hinton: Visualizing Data using t-SNE. Journal of Machine Learning Research 9 (2008), S. 2579 bis 2605.</li>
+        <li><b>Skript:</b> Prof. Dr. F. Gers, Graphical Visualisation Technologies, Kapitel DAT (Daten laden, CSV, Kameralicht), NAV (Navigation durch die Daten) und DIM (Dimensionsreduktion, t-SNE, Seeds-Datensatz).</li>
+        <li><b>Farben:</b> Klassenfarben aus der farbfehlsichtigkeitsfreundlichen Palette von Okabe und Ito.</li>
+        <li><b>Technik:</b> reines WebGL 1 mit GLSL ES 1.00, Matrizen (Perspektive, Ortho, Drehungen, Normalenmatrix) selbst geschrieben, keine weiteren Bibliotheken.</li>
+        <li><b>Quelltext:</b> die für diese Aufgabe geschriebenen Stellen sind mit <code>// START EA10_SEEDS_TSNE</code> und <code>// END EA10_SEEDS_TSNE</code> markiert.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>
+    <p>Die Seite läuft vollständig im Browser. Geladen werden nur die Dateien <code>data/seeds.csv</code>, <code>data/seeds-tsne.json</code> und <code>lib/tsne.js</code> aus diesem Projekt. Es werden keine Daten an einen Server gesendet.</p>
+  </footer>
+</main>
+
+<script src="lib/tsne.js"></script>
+<script>
+// START EA10_SEEDS_TSNE
+(function () {
+  "use strict";
+
+  const CSV_FILE = "data/seeds.csv";
+  const MAP_FILE = "data/seeds-tsne.json";
+  const CLASS_NAMES = ["Kama", "Rosa", "Canadian"];
+  const CLASS_COLORS = [[0.0, 0.447, 0.698], [0.835, 0.369, 0.0], [0.0, 0.620, 0.451]];
+  const BACKGROUND = [0.961, 0.961, 0.961];
+  const EYE_DIST = 3.6;      // Abstand Auge zu Drehpunkt (Perspektive)
+  const LRTB_START = 1.0;    // halbe Höhe des Bildausschnitts am Drehpunkt
+  const POINT_RADIUS = 0.026;
+  const ANIM_MS = 300;
+
+  const statusEl = document.getElementById("globalStatus");
+  const stage = document.getElementById("stage");
+  const stageMsg = document.getElementById("stageMsg");
+  const canvas = document.getElementById("glCanvas");
+  const el = id => document.getElementById(id);
+  const buttons = ["btnRestart", "btnStep", "btnStep10", "btnSave", "btnZoomIn", "btnZoomOut", "btnOrtho", "btnPersp", "btnReset"].map(el);
+
+  function setStatus(text, kind) {
+    statusEl.textContent = text;
+    statusEl.className = "global-status" + (kind ? " is-" + kind : "");
+  }
+  function fail(text, err) {
+    if (err) console.error(text, err);
+    setStatus("Fehler: " + text, "error");
+    stageMsg.textContent = text;
+    stage.classList.add("is-failed");
+    buttons.forEach(b => { b.disabled = true; });
+  }
+  const fmtPct = v => (v * 100).toFixed(1).replace(".", ",") + " %";
+  const fmtNum = (v, d) => v.toFixed(d).replace(".", ",");
+
+  // ---------- Matrizen (spaltenweise, Schnittstelle wie glMatrix) ----------
+  const mat4 = {
+    create() { const m = new Float32Array(16); m[0] = m[5] = m[10] = m[15] = 1; return m; },
+    identity(out) { out.fill(0); out[0] = out[5] = out[10] = out[15] = 1; return out; },
+    copy(out, a) { out.set(a); return out; },
+    multiply(out, a, b) {
+      const r = new Float32Array(16);
+      for (let c = 0; c < 4; c++) {
+        for (let row = 0; row < 4; row++) {
+          r[c * 4 + row] = a[row] * b[c * 4] + a[4 + row] * b[c * 4 + 1] + a[8 + row] * b[c * 4 + 2] + a[12 + row] * b[c * 4 + 3];
+        }
+      }
+      out.set(r);
+      return out;
+    },
+    translate(out, a, v) {
+      const t = mat4.create(); t[12] = v[0]; t[13] = v[1]; t[14] = v[2];
+      return mat4.multiply(out, a, t);
+    },
+    rotateX(out, a, rad) {
+      const c = Math.cos(rad), s = Math.sin(rad), r = mat4.create();
+      r[5] = c; r[6] = s; r[9] = -s; r[10] = c;
+      return mat4.multiply(out, a, r);
+    },
+    rotateY(out, a, rad) {
+      const c = Math.cos(rad), s = Math.sin(rad), r = mat4.create();
+      r[0] = c; r[2] = -s; r[8] = s; r[10] = c;
+      return mat4.multiply(out, a, r);
+    },
+    rotateZ(out, a, rad) {
+      const c = Math.cos(rad), s = Math.sin(rad), r = mat4.create();
+      r[0] = c; r[1] = s; r[4] = -s; r[5] = c;
+      return mat4.multiply(out, a, r);
+    },
+    perspective(out, fovy, aspect, near, far) {
+      const f = 1 / Math.tan(fovy / 2), nf = 1 / (near - far);
+      out.fill(0);
+      out[0] = f / aspect; out[5] = f;
+      out[10] = (far + near) * nf; out[11] = -1;
+      out[14] = 2 * far * near * nf;
+      return out;
+    },
+    ortho(out, l, r, b, t, n, f) {
+      const lr = 1 / (l - r), bt = 1 / (b - t), nf = 1 / (n - f);
+      out.fill(0);
+      out[0] = -2 * lr; out[5] = -2 * bt; out[10] = 2 * nf;
+      out[12] = (l + r) * lr; out[13] = (t + b) * bt; out[14] = (f + n) * nf; out[15] = 1;
+      return out;
+    }
+  };
+  // Normalenmatrix: Inverse der Transponierten des oberen 3x3-Teils
+  function normalMatrix(out, m) {
+    const a00 = m[0], a01 = m[1], a02 = m[2], a10 = m[4], a11 = m[5], a12 = m[6], a20 = m[8], a21 = m[9], a22 = m[10];
+    const b01 = a22 * a11 - a12 * a21, b11 = -a22 * a10 + a12 * a20, b21 = a21 * a10 - a11 * a20;
+    let det = a00 * b01 + a01 * b11 + a02 * b21;
+    if (!det) return out;
+    det = 1 / det;
+    out[0] = b01 * det; out[1] = (-a22 * a01 + a02 * a21) * det; out[2] = (a12 * a01 - a02 * a11) * det;
+    out[3] = b11 * det; out[4] = (a22 * a00 - a02 * a20) * det; out[5] = (-a12 * a00 + a02 * a10) * det;
+    out[6] = b21 * det; out[7] = (-a21 * a00 + a01 * a20) * det; out[8] = (a11 * a00 - a01 * a10) * det;
+    // transponieren
+    let t;
+    t = out[1]; out[1] = out[3]; out[3] = t;
+    t = out[2]; out[2] = out[6]; out[6] = t;
+    t = out[5]; out[5] = out[7]; out[7] = t;
+    return out;
+  }
+
+  // ---------- Kamera (NAV) ----------
+  const camera = {
+    vMatrix: mat4.create(),
+    pMatrix: mat4.create(),
+    projectionType: "perspective",
+    lrtb: LRTB_START,
+    // Function-Factory wie in NAV: Transformation von links an die View-Matrix
+    init() {
+      ["translate", "rotateX", "rotateY", "rotateZ"].forEach(function (f) {
+        camera[f] = function (val) {
+          const M = mat4.create();
+          mat4[f](M, M, val);
+          mat4.multiply(this.vMatrix, M, this.vMatrix);
+          orthonormalize(this.vMatrix);
+        };
+      });
+    },
+    reset() {
+      mat4.identity(this.vMatrix);
+      this.rotateY(-0.55);
+      this.rotateX(0.38);
+      this.lrtb = LRTB_START;
+    }
+  };
+  // hält den Drehanteil der View-Matrix trotz vieler kleiner Drehungen orthonormal
+  function orthonormalize(m) {
+    let x = [m[0], m[1], m[2]], y = [m[4], m[5], m[6]];
+    const len = v => Math.hypot(v[0], v[1], v[2]);
+    let l = len(x); x = x.map(c => c / l);
+    const d = x[0] * y[0] + x[1] * y[1] + x[2] * y[2];
+    y = y.map((c, i) => c - d * x[i]); l = len(y); y = y.map(c => c / l);
+    const z = [x[1] * y[2] - x[2] * y[1], x[2] * y[0] - x[0] * y[2], x[0] * y[1] - x[1] * y[0]];
+    m[0] = x[0]; m[1] = x[1]; m[2] = x[2];
+    m[4] = y[0]; m[5] = y[1]; m[6] = y[2];
+    m[8] = z[0]; m[9] = z[1]; m[10] = z[2];
+  }
+
+  // ---------- Daten (DAT) ----------
+  const Data = {
+    data: null, labels: null, stats: null,
+    readFileFromServer(filename) {
+      return new Promise(function (resolve, reject) {
+        const request = new XMLHttpRequest();
+        request.onreadystatechange = function () {
+          if (request.readyState === XMLHttpRequest.DONE) {
+            if (request.status === 200) resolve(request.responseText);
+            else reject(new Error("Datei " + filename + " nicht gefunden (HTTP " + request.status + ")"));
+          }
+        };
+        request.open("GET", filename);
+        request.send();
+      });
+    },
+    // CSV ohne Kopfzeile, Komma als Trennzeichen, Klasse im letzten Feld
+    parse(textCSV) {
+      const rows = [];
+      textCSV.split(/\r?\n/).forEach(function (line, n) {
+        if (!line.trim()) return;
+        const fields = line.split(",").map(Number);
+        if (fields.length !== 8 || fields.some(v => !Number.isFinite(v))) {
+          throw new Error("Zeile " + (n + 1) + " in " + CSV_FILE + " ist ungültig");
+        }
+        rows.push(fields);
+      });
+      this.data = rows;
+      this.splitDataAndLabels();
+      this.preprocessLabels();
+      this.calcStats();
+    },
+    splitDataAndLabels() {
+      this.labels = this.data.map(d => d.pop());
+    },
+    // Klassen 1, 2, 3 (Kama, Rosa, Canadian) werden zu 0, 1, 2
+    preprocessLabels() {
+      this.labels = this.labels.map(function (l) {
+        if (l !== 1 && l !== 2 && l !== 3) throw new Error("unbekannte Klasse " + l);
+        return l - 1;
+      });
+    },
+    calcStats() {
+      const nb = this.data[0].length, n = this.data.length;
+      const stats = { min: [], max: [], range: [], mean: [] };
+      for (let i = 0; i < nb; i++) {
+        let min = Infinity, max = -Infinity, mean = 0;
+        for (let d = 0; d < n; d++) {
+          const v = this.data[d][i];
+          mean += v / n;
+          if (v < min) min = v;
+          if (v > max) max = v;
+        }
+        stats.min.push(min); stats.max.push(max); stats.range.push(max - min); stats.mean.push(mean);
+      }
+      this.stats = stats;
+    },
+    normalized() {
+      const s = this.stats;
+      return this.data.map(d => d.map((v, i) => (v - s.min[i]) / s.range[i]));
+    }
+  };
+
+  // ---------- Gütemaße ----------
+  function distances(Y) {
+    const n = Y.length, D = new Float64Array(n * n);
+    for (let i = 0; i < n; i++) {
+      for (let j = i + 1; j < n; j++) {
+        let s = 0;
+        for (let k = 0; k < Y[i].length; k++) { const t = Y[i][k] - Y[j][k]; s += t * t; }
+        D[i * n + j] = D[j * n + i] = Math.sqrt(s);
+      }
+    }
+    return D;
+  }
+  function quality(Y, labels) {
+    const n = Y.length, D = distances(Y), k = 5, cnt = [0, 0, 0];
+    labels.forEach(l => cnt[l]++);
+    let ok = 0, sil = 0;
+    const idx = [];
+    for (let i = 0; i < n; i++) {
+      idx.length = 0;
+      for (let j = 0; j < n; j++) if (j !== i) idx.push(j);
+      idx.sort((a, b) => D[i * n + a] - D[i * n + b]);
+      const votes = [0, 0, 0];
+      for (let m = 0; m < k; m++) votes[labels[idx[m]]] += 1 + 1e-6 * (k - m);
+      let best = 0;
+      for (let c = 1; c < 3; c++) if (votes[c] > votes[best]) best = c;
+      if (best === labels[i]) ok++;
+      const sum = [0, 0, 0];
+      for (let j = 0; j < n; j++) if (j !== i) sum[labels[j]] += D[i * n + j];
+      const a = sum[labels[i]] / (cnt[labels[i]] - 1);
+      let b = Infinity;
+      for (let c = 0; c < 3; c++) if (c !== labels[i]) b = Math.min(b, sum[c] / cnt[c]);
+      sil += (b - a) / Math.max(a, b);
+    }
+    return { knn5: ok / n, silhouette: sil / n };
+  }
+
+  // ---------- WebGL ----------
+  const VS = [
+    "attribute vec3 aPosition;",
+    "attribute vec3 aNormal;",
+    "uniform mat4 uPMatrix;",
+    "uniform mat4 uMVMatrix;",
+    "uniform mat3 uNMatrix;",
+    "varying vec3 vNormal;",
+    "varying float vDepth;",
+    "void main() {",
+    "  vec4 tPosition = uMVMatrix * vec4(aPosition, 1.0);",
+    "  gl_Position = uPMatrix * tPosition;",
+    "  vNormal = uNMatrix * aNormal;",
+    "  vDepth = -tPosition.z;",
+    "}"
+  ].join("\n");
+  const FS = [
+    "precision mediump float;",
+    "varying vec3 vNormal;",
+    "varying float vDepth;",
+    "uniform vec3 uColor;",
+    "uniform vec3 uAmbientLight;",
+    "uniform vec3 uBackground;",
+    "uniform vec2 uFog;",
+    // Kameralicht wie in DAT, leicht nach oben links versetzt, dazu ein schwacher Glanzpunkt
+    "vec3 camLight(vec3 n) {",
+    "  vec3 ambient = uColor * uAmbientLight;",
+    "  vec3 s = normalize(vec3(-0.35, 0.45, 1.0));",
+    "  float sn = max(dot(s, n), 0.0);",
+    "  vec3 diffuse = uColor * sn * 0.78;",
+    "  vec3 h = normalize(s + vec3(0.0, 0.0, 1.0));",
+    "  float spec = pow(max(dot(h, n), 0.0), 40.0) * 0.28;",
+    "  return ambient + diffuse + vec3(spec);",
+    "}",
+    "void main() {",
+    "  vec3 n = normalize(vNormal);",
+    "  vec3 color = camLight(n);",
+    "  float f = clamp((vDepth - uFog.x) / (uFog.y - uFog.x), 0.0, 1.0);",
+    "  gl_FragColor = vec4(mix(color, uBackground, f * 0.55), 1.0);",
+    "}"
+  ].join("\n");
+
+  let gl = null, prog = null, sphere = null;
+
+  function compile(type, src) {
+    const sh = gl.createShader(type);
+    gl.shaderSource(sh, src);
+    gl.compileShader(sh);
+    if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) {
+      throw new Error((type === gl.VERTEX_SHADER ? "Vertex" : "Fragment") + "-Shader: " + gl.getShaderInfoLog(sh));
+    }
+    return sh;
+  }
+  function initGL() {
+    gl = canvas.getContext("webgl", { antialias: true });
+    if (!gl) throw new Error("WebGL wird von diesem Browser nicht unterstützt.");
+    prog = gl.createProgram();
+    gl.attachShader(prog, compile(gl.VERTEX_SHADER, VS));
+    gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, FS));
+    gl.linkProgram(prog);
+    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error("Shader-Programm: " + gl.getProgramInfoLog(prog));
+    gl.useProgram(prog);
+    prog.positionAttrib = gl.getAttribLocation(prog, "aPosition");
+    prog.normalAttrib = gl.getAttribLocation(prog, "aNormal");
+    ["uPMatrix", "uMVMatrix", "uNMatrix", "uColor", "uAmbientLight", "uBackground", "uFog"].forEach(function (u) {
+      prog[u] = gl.getUniformLocation(prog, u);
+    });
+    gl.uniform3fv(prog.uAmbientLight, [0.34, 0.34, 0.34]);
+    gl.uniform3fv(prog.uBackground, BACKGROUND);
+    gl.clearColor(BACKGROUND[0], BACKGROUND[1], BACKGROUND[2], 1);
+    gl.enable(gl.DEPTH_TEST);
+    gl.enable(gl.CULL_FACE);
+    sphere = createSphere(20, 14);
+  }
+
+  // Kugel (Radius 1) wie im Kapitel GRU: Vertex-, Normalen- und Index-Array
+  function createSphere(nU, nV) {
+    const vertices = [], normals = [], indices = [];
+    for (let j = 0; j <= nV; j++) {
+      const v = Math.PI * j / nV;
+      for (let i = 0; i <= nU; i++) {
+        const u = 2 * Math.PI * i / nU;
+        const x = Math.sin(v) * Math.cos(u), y = Math.cos(v), z = Math.sin(v) * Math.sin(u);
+        vertices.push(x, y, z);
+        normals.push(x, y, z);
+      }
+    }
+    for (let j = 0; j < nV; j++) {
+      for (let i = 0; i < nU; i++) {
+        const a = j * (nU + 1) + i, b = a + nU + 1;
+        indices.push(a, a + 1, b, a + 1, b + 1, b);
+      }
+    }
+    const s = { vbo: gl.createBuffer(), nbo: gl.createBuffer(), ibo: gl.createBuffer(), count: indices.length };
+    gl.bindBuffer(gl.ARRAY_BUFFER, s.vbo);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER, s.nbo);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normals), gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, s.ibo);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
+    return s;
+  }
+
+  // ---------- Modelle (eine Kugel je Datenpunkt) ----------
+  let models = [];
+  let animStart = 0, animating = false;
+
+  function initModelsFromData(labels) {
+    models = labels.map(l => ({
+      label: l,
+      translate: [0, 0, 0], from: [0, 0, 0], to: [0, 0, 0],
+      scale: POINT_RADIUS * camera.lrtb / LRTB_START
+    }));
+  }
+  // Karte zentrieren und so skalieren, dass 98 % der Punkte im Radius 1 liegen
+  function displayPositions(map) {
+    const n = map.length, mean = [0, 0, 0];
+    map.forEach(p => { for (let d = 0; d < 3; d++) mean[d] += p[d] / n; });
+    const r = map.map(p => Math.hypot(p[0] - mean[0], p[1] - mean[1], p[2] - mean[2])).sort((a, b) => a - b);
+    const q = r[Math.min(n - 1, Math.floor(0.98 * n))] || 1;
+    return map.map(p => [0, 1, 2].map(d => (p[d] - mean[d]) / q));
+  }
+  function setModelTransformationFromData(map, animate) {
+    const pos = displayPositions(map);
+    for (let i = 0; i < models.length; i++) {
+      const m = models[i];
+      m.from = m.translate.slice();
+      m.to = pos[i];
+      if (!animate) m.translate = pos[i].slice();
+    }
+    animating = !!animate;
+    animStart = performance.now();
+    requestRender();
+  }
+  function rescaleModels(factor) {
+    models.forEach(m => { m.scale *= factor; });
+  }
+  const ease = t => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+
+  // ---------- Rendern ----------
+  let renderPending = false;
+  function requestRender() {
+    if (!renderPending) { renderPending = true; requestAnimationFrame(frame); }
+  }
+  function frame(now) {
+    renderPending = false;
+    if (animating) {
+      const t = Math.min(1, Math.max(0, (now - animStart) / ANIM_MS));
+      const e = ease(t);
+      models.forEach(m => { for (let d = 0; d < 3; d++) m.translate[d] = m.from[d] + (m.to[d] - m.from[d]) * e; });
+      if (t >= 1) animating = false; else requestRender();
+    }
+    render();
+  }
+  function resizeCanvas() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const w = Math.max(1, Math.round(canvas.clientWidth * dpr)), h = Math.max(1, Math.round(canvas.clientHeight * dpr));
+    if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+  }
+  function setProjection() {
+    const aspect = canvas.width / canvas.height;
+    // schmale Canvas (Handy): Ausschnitt so vergrößern, dass die Breite reicht
+    const v = camera.lrtb * Math.max(1, 1.5 / aspect);
+    switch (camera.projectionType) {
+      case "ortho":
+        mat4.ortho(camera.pMatrix, -v * aspect, v * aspect, -v, v, -50, 50);
+        break;
+      case "perspective":
+        mat4.perspective(camera.pMatrix, 2 * Math.atan(v / EYE_DIST), aspect, 0.05, 60);
+        break;
+    }
+    gl.uniformMatrix4fv(prog.uPMatrix, false, camera.pMatrix);
+  }
+  const viewMatrix = mat4.create(), mvMatrix = mat4.create(), nMatrix = new Float32Array(9);
+  function render() {
+    if (!gl) return;
+    resizeCanvas();
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    setProjection();
+    // Auge steht EYE_DIST hinter dem Drehpunkt der Kamera
+    mat4.identity(viewMatrix);
+    mat4.translate(viewMatrix, viewMatrix, [0, 0, -EYE_DIST]);
+    mat4.multiply(viewMatrix, viewMatrix, camera.vMatrix);
+    normalMatrix(nMatrix, viewMatrix);
+    gl.uniformMatrix3fv(prog.uNMatrix, false, nMatrix);
+    gl.uniform2f(prog.uFog, EYE_DIST - 1.0, EYE_DIST + 1.3);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, sphere.vbo);
+    gl.vertexAttribPointer(prog.positionAttrib, 3, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(prog.positionAttrib);
+    gl.bindBuffer(gl.ARRAY_BUFFER, sphere.nbo);
+    gl.vertexAttribPointer(prog.normalAttrib, 3, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(prog.normalAttrib);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, sphere.ibo);
+
+    let lastLabel = -1;
+    for (const m of models) {
+      // Model-Matrix = Translation * Skalierung, MV = View * Model
+      mat4.identity(mvMatrix);
+      mat4.translate(mvMatrix, mvMatrix, m.translate);
+      mvMatrix[0] = mvMatrix[5] = mvMatrix[10] = m.scale;
+      mat4.multiply(mvMatrix, viewMatrix, mvMatrix);
+      gl.uniformMatrix4fv(prog.uMVMatrix, false, mvMatrix);
+      if (m.label !== lastLabel) { gl.uniform3fv(prog.uColor, CLASS_COLORS[m.label]); lastLabel = m.label; }
+      gl.drawElements(gl.TRIANGLES, sphere.count, gl.UNSIGNED_SHORT, 0);
+    }
+  }
+
+  // ---------- t-SNE (DIM) ----------
+  let tSNE = null, params = null, inputData = null, fromFile = true;
+
+  function init_tSNE() {
+    tSNE = new tsnejs.tSNE({ dim: params.dim, perplexity: params.perplexity, epsilon: params.epsilon });
+    tSNE.initDataRaw(inputData);
+  }
+  function step_tSNE(nbSteps) {
+    for (let k = 0; k < nbSteps; k++) tSNE.step();
+    setModelTransformationFromData(tSNE.getSolution(), true);
+    displayStepCounter_tSNE();
+  }
+  function restart_tSNE() {
+    init_tSNE();
+    fromFile = false;
+    setModelTransformationFromData(tSNE.getSolution(), true);
+    displayStepCounter_tSNE();
+  }
+  function displayParameter_tSNE() {
+    el("infoPerp").textContent = tSNE.perplexity;
+    el("infoEps").textContent = tSNE.epsilon;
+    el("infoDim").textContent = tSNE.dim;
+  }
+  function displayStepCounter_tSNE() {
+    el("infoStep").textContent = tSNE.iter;
+    el("stepBadge").textContent = tSNE.iter;
+    el("modeBadge").textContent = !fromFile ? "neuer Lauf seit Restart" :
+      (tSNE.iter === params.iterations ? "gespeichertes Ergebnis" : "gespeichertes Ergebnis, fortgesetzt");
+    const q = quality(tSNE.getSolution(), Data.labels);
+    el("infoKnn").textContent = fmtPct(q.knn5);
+    el("infoSil").textContent = fmtNum(q.silhouette, 3);
+  }
+  function displayProjection() {
+    el("infoProj").textContent = camera.projectionType === "ortho" ? "orthogonal" : "perspektivisch";
+  }
+  function fillTables(saved) {
+    const p = saved.params, q = saved.quality;
+    el("tabDim").textContent = p.dim;
+    el("tabPerp").textContent = p.perplexity;
+    el("tabEps").textContent = p.epsilon;
+    el("tabIter").textContent = p.iterations;
+    el("tabNorm").textContent = p.normalization === "minmax" ? "Min-Max" : p.normalization;
+    el("tabKnn5").textContent = fmtPct(q.knn5);
+    el("tabKnn10").textContent = fmtPct(q.knn10);
+    el("tabSil").textContent = fmtNum(q.silhouette, 3);
+    el("tabKnn5o").textContent = fmtPct(q.knn5Original);
+    el("tabSilo").textContent = fmtNum(q.silhouetteOriginal, 3);
+  }
+
+  // Daten speichern wie in DIM, als JSON im Format von data/seeds-tsne.json
+  function downloadData() {
+    const Y = tSNE.getSolution();
+    const q = quality(Y, Data.labels);
+    const out = {
+      dataset: "Seeds (UCI Machine Learning Repository), 210 Weizenkoerner, 7 Merkmale, 3 Klassen",
+      classes: CLASS_NAMES,
+      params: { dim: tSNE.dim, perplexity: tSNE.perplexity, epsilon: tSNE.epsilon, iterations: tSNE.iter, normalization: params.normalization },
+      quality: { knn5: q.knn5, silhouette: q.silhouette },
+      labels: Data.labels,
+      points: Y.map(p => Array.from(p, v => Math.round(v * 1e5) / 1e5))
+    };
+    const a = document.createElement("a");
+    const url = URL.createObjectURL(new Blob([JSON.stringify(out)], { type: "application/json" }));
+    a.href = url;
+    a.download = "seeds-tsne.json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    setStatus("Karte mit Step " + tSNE.iter + " als seeds-tsne.json heruntergeladen.", "ready");
+  }
+
+  // ---------- Interaktion ----------
+  const deltaRotate = Math.PI / 36, deltaTranslate = 0.05;
+  function zoom(sign) {
+    const factor = 1.0 - sign * 0.1;
+    const next = camera.lrtb * factor;
+    if (next < 0.05 || next > 12) return;
+    camera.lrtb = next;
+    rescaleModels(factor);
+    requestRender();
+  }
+  function setProjectionType(type) {
+    camera.projectionType = type;
+    displayProjection();
+    requestRender();
+  }
+  function resetView() {
+    const factor = LRTB_START / camera.lrtb;
+    camera.reset();
+    rescaleModels(factor);
+    requestRender();
+  }
+  function doRestart() {
+    restart_tSNE();
+    setStatus("Restart: neuer Lauf mit neuen Zufallszahlen bei Step 0. Mit t (1 Schritt) oder T (10 Schritte) iterieren.", "ready");
+  }
+  function doStep(n) {
+    step_tSNE(n);
+    setStatus((n === 1 ? "Step: 1 Schritt" : "Step10: 10 Schritte") + " ausgeführt, Step-Count jetzt " + tSNE.iter + ".", "ready");
+  }
+  function flash(btn) {
+    btn.classList.add("is-pressed");
+    setTimeout(function () { btn.classList.remove("is-pressed"); }, 120);
+  }
+
+  function initEventHandler() {
+    el("btnRestart").addEventListener("click", doRestart);
+    el("btnStep").addEventListener("click", () => doStep(1));
+    el("btnStep10").addEventListener("click", () => doStep(10));
+    el("btnSave").addEventListener("click", downloadData);
+    el("btnZoomIn").addEventListener("click", () => zoom(1));
+    el("btnZoomOut").addEventListener("click", () => zoom(-1));
+    el("btnOrtho").addEventListener("click", () => setProjectionType("ortho"));
+    el("btnPersp").addEventListener("click", () => setProjectionType("perspective"));
+    el("btnReset").addEventListener("click", resetView);
+
+    window.addEventListener("keydown", function (evt) {
+      if (!tSNE || evt.ctrlKey || evt.metaKey || evt.altKey) return;
+      const key = evt.key || "";
+      // t-SNE und Einzelaktionen: genau einmal pro Tastendruck, t und T unterscheiden
+      const single = { "r": ["btnRestart", doRestart], "t": ["btnStep", () => doStep(1)], "T": ["btnStep10", () => doStep(10)],
+        "k": ["btnSave", downloadData], "K": ["btnSave", downloadData], "o": ["btnOrtho", () => setProjectionType("ortho")],
+        "O": ["btnOrtho", () => setProjectionType("ortho")], "p": ["btnPersp", () => setProjectionType("perspective")],
+        "P": ["btnPersp", () => setProjectionType("perspective")], "0": ["btnReset", resetView], "R": ["btnRestart", doRestart] };
+      if (single[key]) {
+        evt.preventDefault();
+        if (evt.repeat) return;
+        flash(el(single[key][0]));
+        single[key][1]();
+        return;
+      }
+      // Navigation wie in NAV, Shift kehrt die Richtung um
+      const c = key === " " ? " " : key.toUpperCase();
+      const sign = evt.shiftKey ? -1 : 1;
+      const rotateStep = deltaRotate * sign;
+      const translateStep = camera.lrtb * sign * deltaTranslate;
+      switch (c) {
+        case "X": camera.rotateX(rotateStep); break;
+        case "Y": camera.rotateY(rotateStep); break;
+        case "Z": camera.rotateZ(rotateStep); break;
+        case "W": camera.translate([0, -translateStep, 0]); break;
+        case "A": camera.translate([translateStep, 0, 0]); break;
+        case "S": camera.translate([0, translateStep, 0]); break;
+        case "D": camera.translate([-translateStep, 0, 0]); break;
+        case " ": camera.translate([0, 0, translateStep]); break;
+        case "B": flash(el(sign > 0 ? "btnZoomIn" : "btnZoomOut")); zoom(sign); break;
+        default: return;
+      }
+      evt.preventDefault();
+      requestRender();
+    });
+
+    // Maus und Touch: ziehen dreht die Kamera (Nick und Gier), Mausrad zoomt
+    let drag = null;
+    canvas.addEventListener("pointerdown", function (evt) {
+      if (!tSNE) return;
+      drag = { x: evt.clientX, y: evt.clientY, id: evt.pointerId };
+      canvas.setPointerCapture(evt.pointerId);
+      canvas.classList.add("is-dragging");
+    });
+    canvas.addEventListener("pointermove", function (evt) {
+      if (!drag || evt.pointerId !== drag.id) return;
+      const dx = evt.clientX - drag.x, dy = evt.clientY - drag.y;
+      drag.x = evt.clientX; drag.y = evt.clientY;
+      if (dx) camera.rotateY(dx * 0.008);
+      if (dy) camera.rotateX(dy * 0.008);
+      requestRender();
+    });
+    const endDrag = function () { drag = null; canvas.classList.remove("is-dragging"); };
+    canvas.addEventListener("pointerup", endDrag);
+    canvas.addEventListener("pointercancel", endDrag);
+    canvas.addEventListener("wheel", function (evt) {
+      if (!tSNE || evt.ctrlKey) return;
+      evt.preventDefault();
+      if (evt.deltaY) zoom(evt.deltaY < 0 ? 1 : -1);
+    }, { passive: false });
+    window.addEventListener("resize", requestRender);
+  }
+
+  // ---------- Start ----------
+  function dataLoadedCallback(saved) {
+    // gespeichertes Ergebnis prüfen und als Startlösung setzen
+    const n = Data.data.length;
+    if (!saved || !saved.params || !Array.isArray(saved.points) || saved.points.length !== n ||
+        !Array.isArray(saved.labels) || saved.labels.some((l, i) => l !== Data.labels[i]) ||
+        saved.points.some(p => !Array.isArray(p) || p.length !== saved.params.dim || p.some(v => !Number.isFinite(v)))) {
+      throw new Error("Die Datei " + MAP_FILE + " passt nicht zu " + CSV_FILE + ".");
+    }
+    params = saved.params;
+    inputData = Data.normalized();
+    init_tSNE();
+    tSNE.Y = saved.points.map(p => p.slice());
+    tSNE.iter = params.iterations;
+    fromFile = true;
+
+    initModelsFromData(Data.labels);
+    setModelTransformationFromData(tSNE.getSolution(), false);
+    displayParameter_tSNE();
+    displayStepCounter_tSNE();
+    displayProjection();
+    fillTables(saved);
+    buttons.forEach(b => { b.disabled = false; });
+    setStatus("Bereit. Gespeichertes bestes Ergebnis (Step " + tSNE.iter + ") geladen. r = Restart, t = Step, T = Step10, Maus oder Tasten zum Navigieren.", "ready");
+  }
+
+  function start() {
+    camera.init();
+    camera.reset();
+    try {
+      if (typeof tsnejs === "undefined") throw new Error("Die Bibliothek lib/tsne.js konnte nicht geladen werden.");
+      initGL();
+    } catch (err) {
+      fail(err.message, err);
+      return;
+    }
+    initEventHandler();
+    Promise.all([Data.readFileFromServer(CSV_FILE), Data.readFileFromServer(MAP_FILE)])
+      .then(function (texts) {
+        Data.parse(texts[0]);
+        let saved;
+        try { saved = JSON.parse(texts[1]); } catch (e) { throw new Error("Die Datei " + MAP_FILE + " ist kein gültiges JSON."); }
+        dataLoadedCallback(saved);
+      })
+      .catch(function (err) { fail(err.message, err); });
+  }
+
+  start();
+})();
+// END EA10_SEEDS_TSNE
+
+// Hilfe-Popover
+document.querySelectorAll(".help").forEach(help => {
+  const btn = help.querySelector(".help-btn");
+  btn.addEventListener("click", e => {
+    e.stopPropagation();
+    document.querySelectorAll(".help.is-open").forEach(h => { if (h !== help) { h.classList.remove("is-open"); h.querySelector(".help-btn").setAttribute("aria-expanded", "false"); } });
+    const open = help.classList.toggle("is-open");
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
+  });
+});
+document.addEventListener("click", e => { if (!e.target.closest(".help")) document.querySelectorAll(".help.is-open").forEach(h => { h.classList.remove("is-open"); h.querySelector(".help-btn").setAttribute("aria-expanded", "false"); }); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") document.querySelectorAll(".help.is-open").forEach(h => { h.classList.remove("is-open"); h.querySelector(".help-btn").setAttribute("aria-expanded", "false"); }); });
+</script>
+</body>
+</html>
